@@ -1,10 +1,12 @@
-//! examples/local.rs
+//! examples/local_err.rs
 
 #![deny(unsafe_code)]
-// #![deny(warnings)]
+#![deny(warnings)]
 #![no_main]
 #![no_std]
 
+// errors here, since we cannot bail compilation or generate stubs
+// run cargo expand, then you see the root of the problem...
 use cortex_m_semihosting::{debug, hprintln};
 use lm3s6965::Interrupt;
 use panic_semihosting as _;
@@ -43,6 +45,9 @@ const APP: () = {
     }
 
     // `shared` cannot be accessed from this context
+    // l1 ok
+    // l2 rejeceted (not task_local)
+    // e2 ok
     #[idle(resources =[l1, l2, e2])]
     fn idle(cx: idle::Context) -> ! {
         hprintln!("IDLE:l1 = {}", cx.resources.l1).unwrap();
@@ -52,6 +57,8 @@ const APP: () = {
     }
 
     // `shared` can be accessed from this context
+    // l2 rejected (not task_local)
+    // e1 rejected (not lock_free)
     #[task(priority = 1, binds = UART0, resources = [shared, l2, e1])]
     fn uart0(cx: uart0::Context) {
         let shared: &mut u32 = cx.resources.shared;
@@ -62,7 +69,7 @@ const APP: () = {
         hprintln!("UART0:e1 = {}", cx.resources.e1).unwrap();
     }
 
-    // l2 should be rejected (not implemented)
+    // l2 rejected (not task_local)
     #[task(priority = 2, binds = UART1, resources = [shared, l2, e1])]
     fn uart1(cx: uart1::Context) {
         let shared: &mut u32 = cx.resources.shared;
@@ -72,7 +79,4 @@ const APP: () = {
         hprintln!("UART1:l2 = {}", cx.resources.l2).unwrap();
         hprintln!("UART1:e1 = {}", cx.resources.e1).unwrap();
     }
-
-    // if priority is changed we should report a better error message
-    // currently, we get an error since RTFM detects a potential race
 };
