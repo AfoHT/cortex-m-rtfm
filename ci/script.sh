@@ -44,6 +44,17 @@ main() {
         fi
 
         if [ $TRAVIS_RUST_VERSION = nightly ]; then
+            # Include some examples which fail on stable
+            cp nightly-tests/* examples
+
+            local exs=$(ls nightly-tests )
+
+            for ex in ${exs[@]}; do
+                cargo check --target $T --example $(basename $ex .rs)
+                # Clean up completed tests
+                rm examples/$ex
+            done
+
             # multi-core compile-pass tests
             pushd heterogeneous
             local exs=(
