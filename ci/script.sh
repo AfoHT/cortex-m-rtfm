@@ -33,6 +33,40 @@ arm_example() {
 
 main() {
     local T=$TARGET
+    local examples_all=(
+        baseline.rs
+        binds.rs
+        capacity.rs
+        cfg.rs
+        destructure.rs
+        generics.rs
+        hardware.rs
+        idle.rs
+        init.rs
+        late.rs
+        lock.rs
+        message.rs
+        not-send.rs
+        not-sync.rs
+        only-shared-access.rs
+        periodic.rs
+        pool.rs
+        preempt.rs
+        ramfunc.rs
+        resource.rs
+        schedule.rs
+        shared-with-init.rs
+        smallest.rs
+
+        t-binds.rs
+        t-cfg.rs
+        t-late-not-send.rs
+        t-resource.rs
+        t-schedule.rs
+        t-spawn.rs
+        task.rs
+        types.rs
+    )
 
     mkdir -p ci/builds
 
@@ -44,6 +78,14 @@ main() {
         fi
 
         if [ $TRAVIS_RUST_VERSION = nightly ]; then
+            # Tests where required MSRV > 1.36
+            local exs=(
+                t-cfg-resources
+            )
+            for ex in ${exs[@]}; do
+                cargo check --example $ex --target $T
+            done
+
             # multi-core compile-pass tests
             pushd heterogeneous
             local exs=(
@@ -87,13 +129,15 @@ main() {
         return
     fi
 
-    if [ $TARGET = thumbv6m-none-eabi ]; then
-        cargo check --target $T --examples
-    else
-        cargo check --target $T --examples --features __v7
-    fi
+    for ex in ${examples_all[@]}; do
+        if [ $TARGET = thumbv6m-none-eabi ]; then
+            cargo check --target $T --example $ex
+        else
+            cargo check --target $T --examples --features __v7
+        fi
 
-    cargo check -p homogeneous --target $T --examples
+        cargo check -p homogeneous --target $T --example $ex
+    done
 
     # run-pass tests
     case $T in
