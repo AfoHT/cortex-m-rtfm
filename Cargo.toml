@@ -75,6 +75,11 @@ trybuild = "1"
 [features]
 heterogeneous = ["cortex-m-rtfm-macros/heterogeneous", "microamp"]
 homogeneous = ["cortex-m-rtfm-macros/homogeneous"]
+feature_s = []
+feature_l1 = []
+feature_l2 = []
+feature_e1 = []
+feature_e2 = []
 # used for testing this crate; do not use in applications
 __v7 =[]
 
