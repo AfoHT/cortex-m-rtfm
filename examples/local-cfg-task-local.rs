@@ -1,4 +1,4 @@
-//! examples/local.rs
+//! examples/local-cfg-task-local.rs
 
 #![deny(unsafe_code)]
 //#![deny(warnings)]
