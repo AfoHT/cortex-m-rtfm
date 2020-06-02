@@ -348,7 +348,7 @@ signature <code>fn(idle::Context) - &gt; !</code>.</p>
 <p>When present, the runtime will execute the <code>idle</code> task after <code>init</code>. Unlike
 <code>init</code>, <code>idle</code> will run <em>with interrupts enabled</em> and it's not allowed to return
 so it must run forever.</p>
-<p>When no <code>idle</code> function is declared, the runtime sets the <a href="https://developer.arm.com/products/architecture/cpu-architecture/m-profile/docs/100737/0100/power-management/sleep-mode/sleep-on-exit-bit">SLEEPONEXIT</a> bit and
+<p>When no <code>idle</code> function is declared, the runtime sets the <a href="https://developer.arm.com/docs/100737/0100/power-management/sleep-mode/sleep-on-exit-bit">SLEEPONEXIT</a> bit and
 then sends the microcontroller to sleep after running <code>init</code>.</p>
 <p>Like in <code>init</code>, <code>static mut</code> variables will be transformed into <code>&amp;'static mut</code>
 references that are safe to access.</p>
@@ -457,7 +457,7 @@ const APP: () = {
 };
 
 #}</code></pre></pre>
-<pre><code class="language-console">$ cargo run --example interrupt
+<pre><code class="language-console">$ cargo run --example hardware
 init
 UART0 called 1 time
 idle
@@ -523,7 +523,7 @@ const APP: () = {
 };
 
 #}</code></pre></pre>
-<pre><code class="language-console">$ cargo run --example interrupt
+<pre><code class="language-console">$ cargo run --example preempt
 GPIOA - start
  GPIOC - start
  GPIOC - end
@@ -1166,10 +1166,12 @@ counter functionality has not been implemented in <code>qemu-system-arm</code>.<
 #fn main() {
 //! examples/schedule.rs
 
+#![deny(unsafe_code)]
 #![deny(warnings)]
 #![no_main]
 #![no_std]
 
+use cortex_m::peripheral::DWT;
 use cortex_m_semihosting::hprintln;
 use panic_halt as _;
 use rtfm::cyccnt::{Instant, U32Ext as _};
@@ -1181,11 +1183,12 @@ const APP: () = {
     fn init(mut cx: init::Context) {
         // Initialize (enable) the monotonic timer (CYCCNT)
         cx.core.DCB.enable_trace();
-        // required on devices that software lock the DWT (e.g. STM32F7)
-        unsafe { cx.core.DWT.lar.write(0xC5ACCE55) }
+        // required on Cortex-M7 devices that software lock the DWT (e.g. STM32F7)
+        DWT::unlock();
         cx.core.DWT.enable_cycle_counter();
 
         // semantically, the monotonic timer is frozen at time &quot;zero&quot; during `init`
+        // NOTE do *not* call `Instant::now` in this context; it will return a nonsense value
         let now = cx.start; // the start time of the system
 
         hprintln!(&quot;init @ {:?}&quot;, now).unwrap();
@@ -2271,7 +2274,9 @@ argument of the <code>#[rtfm::app]</code> attribute. To continue using the cycle
 the <code>monotonic = rtfm::cyccnt::CYCCNT</code> argument to the <code>#[rtfm::app]</code> attribute.</p>
 <p>Also, the <code>Duration</code> and <code>Instant</code> types and the <code>U32Ext</code> trait have been moved
 into the <code>rtfm::cyccnt</code> module. This module is only available on ARMv7-M+
-devices.</p>
+devices. The removal of the <code>timer-queue</code> also brings back the <code>DWT</code> peripheral
+inside the core peripherals struct, this will need to be enabled by the application
+inside <code>init</code>. </p>
 <p>Change this:</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
@@ -2296,6 +2301,12 @@ use rtfm::cyccnt::{Duration, Instant, U32Ext};
 #[rtfm::app(/* .. */, monotonic = rtfm::cyccnt::CYCCNT)]
 //                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 const APP: () = {
+    #[init]
+    fn init(cx: init::Context) {
+        cx.core.DWT.enable_cycle_counter();
+        // optional, configure the DWT run without a debugger connected
+        cx.core.DCB.enable_trace();
+    }
     #[task(schedule = [b])]
     fn a(cx: a::Context) {
         // ..

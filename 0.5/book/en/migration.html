@@ -324,7 +324,9 @@ argument of the <code>#[rtfm::app]</code> attribute. To continue using the cycle
 the <code>monotonic = rtfm::cyccnt::CYCCNT</code> argument to the <code>#[rtfm::app]</code> attribute.</p>
 <p>Also, the <code>Duration</code> and <code>Instant</code> types and the <code>U32Ext</code> trait have been moved
 into the <code>rtfm::cyccnt</code> module. This module is only available on ARMv7-M+
-devices.</p>
+devices. The removal of the <code>timer-queue</code> also brings back the <code>DWT</code> peripheral
+inside the core peripherals struct, this will need to be enabled by the application
+inside <code>init</code>. </p>
 <p>Change this:</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
@@ -349,6 +351,12 @@ use rtfm::cyccnt::{Duration, Instant, U32Ext};
 #[rtfm::app(/* .. */, monotonic = rtfm::cyccnt::CYCCNT)]
 //                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 const APP: () = {
+    #[init]
+    fn init(cx: init::Context) {
+        cx.core.DWT.enable_cycle_counter();
+        // optional, configure the DWT run without a debugger connected
+        cx.core.DCB.enable_trace();
+    }
     #[task(schedule = [b])]
     fn a(cx: a::Context) {
         // ..

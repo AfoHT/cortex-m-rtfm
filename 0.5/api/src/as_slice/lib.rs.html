@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/as-slice-0.1.0/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../as_slice/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form js-only"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/as-slice-0.1.3/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css"><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../as_slice/index.html'><div class='logo-container'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -140,6 +140,34 @@
 <span id="140">140</span>
 <span id="141">141</span>
 <span id="142">142</span>
+<span id="143">143</span>
+<span id="144">144</span>
+<span id="145">145</span>
+<span id="146">146</span>
+<span id="147">147</span>
+<span id="148">148</span>
+<span id="149">149</span>
+<span id="150">150</span>
+<span id="151">151</span>
+<span id="152">152</span>
+<span id="153">153</span>
+<span id="154">154</span>
+<span id="155">155</span>
+<span id="156">156</span>
+<span id="157">157</span>
+<span id="158">158</span>
+<span id="159">159</span>
+<span id="160">160</span>
+<span id="161">161</span>
+<span id="162">162</span>
+<span id="163">163</span>
+<span id="164">164</span>
+<span id="165">165</span>
+<span id="166">166</span>
+<span id="167">167</span>
+<span id="168">168</span>
+<span id="169">169</span>
+<span id="170">170</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! `AsSlice` and `AsMutSlice` traits</span>
 <span class="doccomment">//!</span>
@@ -150,20 +178,26 @@
 <span class="doccomment">//! example, a bound `T: StableDeref + AsMutSlice&lt;Element = u8&gt; + &#39;static` will accepts types like</span>
 <span class="doccomment">//! `&amp;&#39;static mut [u8]`, `&amp;&#39;static mut [u8; 128]` and `&amp;&#39;static mut GenericArray&lt;u8, U1024&gt;` -- all</span>
 <span class="doccomment">//! of them are appropriate for DMA transfers.</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! # Minimal Supported Rust Version (MSRV)</span>
+<span class="doccomment">//!</span>
+<span class="doccomment">//! This crate is guaranteed to compile on stable Rust 1.31 and up. It *might* compile on older</span>
+<span class="doccomment">//! versions but that may change in any new patch release.</span>
 
 <span class="attribute">#![<span class="ident">deny</span>(<span class="ident">missing_docs</span>)]</span>
 <span class="attribute">#![<span class="ident">deny</span>(<span class="ident">warnings</span>)]</span>
 <span class="attribute">#![<span class="ident">no_std</span>]</span>
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">generic_array</span>;
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">ga13</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">stable_deref_trait</span>;
-
-<span class="kw">use</span> <span class="ident">generic_array</span>::{<span class="ident">ArrayLength</span>, <span class="ident">GenericArray</span>};
 
 <span class="doccomment">/// Something that can be seen as an immutable slice</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// **NOTE**: This trait is implemented for arrays (`[T; N]`) of sizes 0 to 256 (inclusive). These</span>
-<span class="doccomment">/// implementations don&#39;t show in the documentation because they would reduce readability.</span>
+<span class="doccomment">/// **NOTE**: This trait is implemented for arrays (`[T; N]`) of sizes 0 to 256</span>
+<span class="doccomment">/// (inclusive) and arrays whose lengths are a power of 2 up to `1 &lt;&lt; 16`. These</span>
+<span class="doccomment">/// implementations don&#39;t show in the documentation because they would reduce</span>
+<span class="doccomment">/// readability.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">AsSlice</span> {
     <span class="doccomment">/// The element type of the slice view</span>
     <span class="kw">type</span> <span class="ident">Element</span>;
@@ -174,8 +208,10 @@
 
 <span class="doccomment">/// Something that can be seen as an mutable slice</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// **NOTE**: This trait is implemented for arrays (`[T; N]`) of sizes 0 to 256 (inclusive). These</span>
-<span class="doccomment">/// implementations don&#39;t show in the documentation because they would reduce readability.</span>
+<span class="doccomment">/// **NOTE**: This trait is implemented for arrays (`[T; N]`) of sizes 0 to 256</span>
+<span class="doccomment">/// (inclusive) and arrays whose lengths are a power of 2 up to `1 &lt;&lt; 16`. These</span>
+<span class="doccomment">/// implementations don&#39;t show in the documentation because they would reduce</span>
+<span class="doccomment">/// readability.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">AsMutSlice</span>: <span class="ident">AsSlice</span> {
     <span class="doccomment">/// Returns the mutable slice view of `Self`</span>
     <span class="kw">fn</span> <span class="ident">as_mut_slice</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="self">Self</span>::<span class="ident">Element</span>];
@@ -226,9 +262,9 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> <span class="ident">AsSlice</span> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> <span class="ident">AsSlice</span> <span class="kw">for</span> <span class="ident">generic_array</span>::<span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+    <span class="ident">N</span>: <span class="ident">generic_array</span>::<span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
 {
     <span class="kw">type</span> <span class="ident">Element</span> <span class="op">=</span> <span class="ident">T</span>;
 
@@ -237,9 +273,29 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> <span class="ident">AsMutSlice</span> <span class="kw">for</span> <span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> <span class="ident">AsMutSlice</span> <span class="kw">for</span> <span class="ident">generic_array</span>::<span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">N</span>: <span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+    <span class="ident">N</span>: <span class="ident">generic_array</span>::<span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+{
+    <span class="kw">fn</span> <span class="ident">as_mut_slice</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">T</span>] {
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> <span class="ident">AsSlice</span> <span class="kw">for</span> <span class="ident">ga13</span>::<span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+    <span class="ident">N</span>: <span class="ident">ga13</span>::<span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
+{
+    <span class="kw">type</span> <span class="ident">Element</span> <span class="op">=</span> <span class="ident">T</span>;
+
+    <span class="kw">fn</span> <span class="ident">as_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">T</span>] {
+        <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span> <span class="ident">AsMutSlice</span> <span class="kw">for</span> <span class="ident">ga13</span>::<span class="ident">GenericArray</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">N</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+    <span class="ident">N</span>: <span class="ident">ga13</span>::<span class="ident">ArrayLength</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
 {
     <span class="kw">fn</span> <span class="ident">as_mut_slice</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">T</span>] {
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="self">self</span>
@@ -281,7 +337,7 @@
     <span class="number">193</span>, <span class="number">194</span>, <span class="number">195</span>, <span class="number">196</span>, <span class="number">197</span>, <span class="number">198</span>, <span class="number">199</span>, <span class="number">200</span>, <span class="number">201</span>, <span class="number">202</span>, <span class="number">203</span>, <span class="number">204</span>, <span class="number">205</span>, <span class="number">206</span>, <span class="number">207</span>, <span class="number">208</span>, <span class="number">209</span>, <span class="number">210</span>, <span class="number">211</span>,
     <span class="number">212</span>, <span class="number">213</span>, <span class="number">214</span>, <span class="number">215</span>, <span class="number">216</span>, <span class="number">217</span>, <span class="number">218</span>, <span class="number">219</span>, <span class="number">220</span>, <span class="number">221</span>, <span class="number">222</span>, <span class="number">223</span>, <span class="number">224</span>, <span class="number">225</span>, <span class="number">226</span>, <span class="number">227</span>, <span class="number">228</span>, <span class="number">229</span>, <span class="number">230</span>,
     <span class="number">231</span>, <span class="number">232</span>, <span class="number">233</span>, <span class="number">234</span>, <span class="number">235</span>, <span class="number">236</span>, <span class="number">237</span>, <span class="number">238</span>, <span class="number">239</span>, <span class="number">240</span>, <span class="number">241</span>, <span class="number">242</span>, <span class="number">243</span>, <span class="number">244</span>, <span class="number">245</span>, <span class="number">246</span>, <span class="number">247</span>, <span class="number">248</span>, <span class="number">249</span>,
-    <span class="number">250</span>, <span class="number">251</span>, <span class="number">252</span>, <span class="number">253</span>, <span class="number">254</span>, <span class="number">255</span>, <span class="number">256</span>
+    <span class="number">250</span>, <span class="number">251</span>, <span class="number">252</span>, <span class="number">253</span>, <span class="number">254</span>, <span class="number">255</span>, <span class="number">256</span>, <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">9</span>, <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">10</span>, <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">11</span>, <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">12</span>, <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">13</span>, <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">14</span>, <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">15</span>, <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">16</span>
 );
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><aside id="help" class="hidden"><div><h1 class="hidden">Help</h1><div class="shortcuts"><h2>Keyboard Shortcuts</h2><dl><dt><kbd>?</kbd></dt><dd>Show this help dialog</dd><dt><kbd>S</kbd></dt><dd>Focus the search field</dd><dt><kbd>↑</kbd></dt><dd>Move up in search results</dd><dt><kbd>↓</kbd></dt><dd>Move down in search results</dd><dt><kbd>↹</kbd></dt><dd>Switch tab</dd><dt><kbd>&#9166;</kbd></dt><dd>Go to active search result</dd><dt><kbd>+</kbd></dt><dd>Expand all sections</dd><dt><kbd>-</kbd></dt><dd>Collapse all sections</dd></dl></div><div class="infos"><h2>Search Tricks</h2><p>Prefix searches with a type followed by a colon (e.g., <code>fn:</code>) to restrict the search to a given type.</p><p>Accepted types are: <code>fn</code>, <code>mod</code>, <code>struct</code>, <code>enum</code>, <code>trait</code>, <code>type</code>, <code>macro</code>, and <code>const</code>.</p><p>Search functions by type signature (e.g., <code>vec -> usize</code> or <code>* -> vec</code>)</p><p>Search multiple things at once by splitting your query with comma (e.g., <code>str,u8</code> or <code>String,struct:Vec,test</code>)</p></div></div></aside><script>window.rootPath = "../../";window.currentCrate = "as_slice";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "as_slice";</script><script src="../../aliases.js"></script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
