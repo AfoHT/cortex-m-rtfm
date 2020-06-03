@@ -168,9 +168,9 @@
                             <span class="kw">let</span> <span class="ident">cfgs</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">app</span>.<span class="ident">late_resources</span>[<span class="ident">name</span>].<span class="ident">cfgs</span>;
 
                             <span class="macro">quote</span><span class="macro">!</span>(
-                            #(#<span class="ident">cfgs</span>)<span class="op">*</span>
-                            <span class="kw">pub</span> #<span class="ident">name</span>: #<span class="ident">ty</span>
-                            )
+                                #(#<span class="ident">cfgs</span>)<span class="op">*</span>
+                                <span class="kw">pub</span> #<span class="ident">name</span>: #<span class="ident">ty</span>
+                                )
                         })
                         .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
                 })
