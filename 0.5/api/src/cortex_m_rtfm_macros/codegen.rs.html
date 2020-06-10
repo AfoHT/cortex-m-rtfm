@@ -160,6 +160,7 @@
 <span id="160">160</span>
 <span id="161">161</span>
 <span id="162">162</span>
+<span id="163">163</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">proc_macro2</span>::<span class="ident">TokenStream</span> <span class="kw">as</span> <span class="ident">TokenStream2</span>;
 <span class="kw">use</span> <span class="ident">quote</span>::<span class="ident">quote</span>;
@@ -202,7 +203,8 @@
         <span class="kw">let</span> (<span class="ident">const_app_init</span>, <span class="ident">root_init</span>, <span class="ident">user_init</span>, <span class="ident">call_init</span>) <span class="op">=</span>
             <span class="ident">init</span>::<span class="ident">codegen</span>(<span class="ident">core</span>, <span class="ident">app</span>, <span class="ident">analysis</span>, <span class="ident">extra</span>);
 
-        <span class="kw">let</span> (<span class="ident">const_app_post_init</span>, <span class="ident">post_init_stmts</span>) <span class="op">=</span> <span class="ident">post_init</span>::<span class="ident">codegen</span>(<span class="ident">core</span>, <span class="kw-2">&amp;</span><span class="ident">app</span>, <span class="ident">analysis</span>, <span class="ident">extra</span>);
+        <span class="kw">let</span> (<span class="ident">const_app_post_init</span>, <span class="ident">post_init_stmts</span>) <span class="op">=</span>
+            <span class="ident">post_init</span>::<span class="ident">codegen</span>(<span class="ident">core</span>, <span class="kw-2">&amp;</span><span class="ident">app</span>, <span class="ident">analysis</span>, <span class="ident">extra</span>);
 
         <span class="kw">let</span> (<span class="ident">const_app_idle</span>, <span class="ident">root_idle</span>, <span class="ident">user_idle</span>, <span class="ident">call_idle</span>) <span class="op">=</span>
             <span class="ident">idle</span>::<span class="ident">codegen</span>(<span class="ident">core</span>, <span class="ident">app</span>, <span class="ident">analysis</span>, <span class="ident">extra</span>);
