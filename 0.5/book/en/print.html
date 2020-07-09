@@ -925,10 +925,12 @@ const APP: () = {
         hprintln!(&quot;baz&quot;).unwrap();
     }
 
-    // Interrupt handlers used to dispatch software tasks
+    // RTIC requires that unused interrupts are declared in an extern block when
+    // using software tasks; these free interrupts will be used to dispatch the
+    // software tasks.
     extern &quot;C&quot; {
-        fn UART0();
-        fn UART1();
+        fn SSI0();
+        fn QEI0();
     }
 };
 
@@ -993,8 +995,11 @@ const APP: () = {
         c.spawn.foo().unwrap();
     }
 
+    // RTIC requires that unused interrupts are declared in an extern block when
+    // using software tasks; these free interrupts will be used to dispatch the
+    // software tasks.
     extern &quot;C&quot; {
-        fn UART0();
+        fn SSI0();
     }
 };
 
@@ -1061,9 +1066,11 @@ const APP: () = {
         debug::exit(debug::EXIT_SUCCESS);
     }
 
-    // Interrupt handlers used to dispatch software tasks
+    // RTIC requires that unused interrupts are declared in an extern block when
+    // using software tasks; these free interrupts will be used to dispatch the
+    // software tasks.
     extern &quot;C&quot; {
-        fn UART1();
+        fn SSI0();
     }
 };
 
@@ -1215,8 +1222,11 @@ const APP: () = {
         hprintln!(&quot;bar  @ {:?}&quot;, Instant::now()).unwrap();
     }
 
+    // RTIC requires that unused interrupts are declared in an extern block when
+    // using software tasks; these free interrupts will be used to dispatch the
+    // software tasks.
     extern &quot;C&quot; {
-        fn UART0();
+        fn SSI0();
     }
 };
 
@@ -1270,8 +1280,11 @@ const APP: () = {
         cx.schedule.foo(cx.scheduled + PERIOD.cycles()).unwrap();
     }
 
+    // RTIC requires that unused interrupts are declared in an extern block when
+    // using software tasks; these free interrupts will be used to dispatch the
+    // software tasks.
     extern &quot;C&quot; {
-        fn UART0();
+        fn SSI0();
     }
 };
 
@@ -1350,8 +1363,11 @@ const APP: () = {
         cx.spawn.foo().unwrap();
     }
 
+    // RTIC requires that unused interrupts are declared in an extern block when
+    // using software tasks; these free interrupts will be used to dispatch the
+    // software tasks.
     extern &quot;C&quot; {
-        fn UART1();
+        fn SSI0();
     }
 };
 
@@ -1428,8 +1444,11 @@ const APP: () = {
         let _: foo::Spawn = cx.spawn;
     }
 
+    // RTIC requires that unused interrupts are declared in an extern block when
+    // using software tasks; these free interrupts will be used to dispatch the
+    // software tasks.
     extern &quot;C&quot; {
-        fn UART1();
+        fn SSI0();
     }
 };
 
@@ -1505,9 +1524,12 @@ const APP: () = {
         debug::exit(debug::EXIT_SUCCESS);
     }
 
+    // RTIC requires that unused interrupts are declared in an extern block when
+    // using software tasks; these free interrupts will be used to dispatch the
+    // software tasks.
     extern &quot;C&quot; {
-        fn UART0();
-        fn UART1();
+        fn SSI0();
+        fn QEI0();
     }
 };
 
@@ -1617,8 +1639,11 @@ const APP: () = {
         let _: &amp;NotSync = c.resources.shared;
     }
 
+    // RTIC requires that unused interrupts are declared in an extern block when
+    // using software tasks; these free interrupts will be used to dispatch the
+    // software tasks.
     extern &quot;C&quot; {
-        fn UART0();
+        fn SSI0();
     }
 };
 
@@ -1835,9 +1860,12 @@ const APP: () = {
         .ok();
     }
 
+    // RTIC requires that unused interrupts are declared in an extern block when
+    // using software tasks; these free interrupts will be used to dispatch the
+    // software tasks.
     extern &quot;C&quot; {
-        fn UART0();
-        fn UART1();
+        fn SSI0();
+        fn QEI0();
     }
 };
 
@@ -1997,9 +2025,12 @@ const APP: () = {
         // drop(x);
     }
 
+    // RTIC requires that unused interrupts are declared in an extern block when
+    // using software tasks; these free interrupts will be used to dispatch the
+    // software tasks.
     extern &quot;C&quot; {
-        fn UART0();
-        fn UART1();
+        fn SSI0();
+        fn QEI0();
     }
 };
 
