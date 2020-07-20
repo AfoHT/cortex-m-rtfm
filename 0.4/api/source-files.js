@@ -2,6 +2,7 @@ var N = null;var sourcesIndex = {};
 sourcesIndex["aligned"] = {"name":"","files":["lib.rs","sealed.rs"]};
 sourcesIndex["as_slice"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["bare_metal"] = {"name":"","files":["lib.rs"]};
+sourcesIndex["bitfield"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["byteorder"] = {"name":"","files":["lib.rs"]};
 sourcesIndex["cortex_m"] = {"name":"","dirs":[{"name":"peripheral","files":["dwt.rs","mod.rs","nvic.rs","scb.rs"]}],"files":["lib.rs","macros.rs"]};
 sourcesIndex["cortex_m_rt"] = {"name":"","files":["lib.rs"]};

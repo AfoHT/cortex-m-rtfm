@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/cortex-m-0.6.2/src/peripheral/scb.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>scb.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../cortex_m/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/cortex-m-0.6.3/src/peripheral/scb.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>scb.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css"><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../cortex_m/index.html'><div class='logo-container'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -840,6 +840,91 @@
 <span id="840">840</span>
 <span id="841">841</span>
 <span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
+<span id="889">889</span>
+<span id="890">890</span>
+<span id="891">891</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
+<span id="918">918</span>
+<span id="919">919</span>
+<span id="920">920</span>
+<span id="921">921</span>
+<span id="922">922</span>
+<span id="923">923</span>
+<span id="924">924</span>
+<span id="925">925</span>
+<span id="926">926</span>
+<span id="927">927</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! System Control Block</span>
 
@@ -1148,8 +1233,8 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">armv6m</span>))]</span>
 <span class="kw">mod</span> <span class="ident">scb_consts</span> {
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SCB_CCR_IC_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">17</span>);
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SCB_CCR_DC_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">16</span>);
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SCB_CCR_IC_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">17</span>;
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SCB_CCR_DC_MASK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">16</span>;
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">armv6m</span>))]</span>
@@ -1171,11 +1256,16 @@
         <span class="comment">// Invalidate I-Cache</span>
         <span class="ident">cbp</span>.<span class="ident">iciallu</span>();
 
-        <span class="comment">// Enable I-Cache</span>
-        <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">ccr</span>.<span class="ident">modify</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span> <span class="op">|</span> <span class="ident">SCB_CCR_IC_MASK</span>) };
+        <span class="comment">// Enable I-cache</span>
+        <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
+            <span class="comment">// see asm-v7m.s</span>
+            <span class="kw">fn</span> <span class="ident">__enable_icache</span>();
+        }
 
-        <span class="kw">crate</span>::<span class="ident">asm</span>::<span class="ident">dsb</span>();
-        <span class="kw">crate</span>::<span class="ident">asm</span>::<span class="ident">isb</span>();
+        <span class="comment">// NOTE(unsafe): The asm routine manages exclusive access to the SCB</span>
+        <span class="comment">// registers and applies the proper barriers; it is technically safe on</span>
+        <span class="comment">// its own, and is only `unsafe` here because it&#39;s `extern &quot;C&quot;`.</span>
+        <span class="kw">unsafe</span> { <span class="ident">__enable_icache</span>(); }
     }
 
     <span class="doccomment">/// Disables I-Cache if currently enabled</span>
@@ -1233,11 +1323,16 @@
         <span class="comment">// Invalidate anything currently in the DCache</span>
         <span class="self">self</span>.<span class="ident">invalidate_dcache</span>(<span class="ident">cpuid</span>);
 
-        <span class="comment">// Now turn on the DCache</span>
-        <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">ccr</span>.<span class="ident">modify</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">r</span> <span class="op">|</span> <span class="ident">SCB_CCR_DC_MASK</span>) };
+        <span class="comment">// Now turn on the D-cache</span>
+        <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
+            <span class="comment">// see asm-v7m.s</span>
+            <span class="kw">fn</span> <span class="ident">__enable_dcache</span>();
+        }
 
-        <span class="kw">crate</span>::<span class="ident">asm</span>::<span class="ident">dsb</span>();
-        <span class="kw">crate</span>::<span class="ident">asm</span>::<span class="ident">isb</span>();
+        <span class="comment">// NOTE(unsafe): The asm routine manages exclusive access to the SCB</span>
+        <span class="comment">// registers and applies the proper barriers; it is technically safe on</span>
+        <span class="comment">// its own, and is only `unsafe` here because it&#39;s `extern &quot;C&quot;`.</span>
+        <span class="kw">unsafe</span> { <span class="ident">__enable_dcache</span>(); }
     }
 
     <span class="doccomment">/// Disables D-cache if currently enabled</span>
@@ -1547,7 +1642,7 @@
         }
     }
 
-    <span class="doccomment">/// Set the PENDSTCLR bit in the ICSR register which will clear a pending SysTick interrupt</span>
+    <span class="doccomment">/// Set the PENDSTSET bit in the ICSR register which will pend a SysTick interrupt</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_pendst</span>() {
         <span class="kw">unsafe</span> {
@@ -1682,6 +1777,81 @@
             });
         }
     }
+
+    <span class="doccomment">/// Return the bit position of the exception enable bit in the SHCSR register</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">armv6m</span>, <span class="ident">armv8m_base</span>)))]</span>
+    <span class="kw">fn</span> <span class="ident">shcsr_enable_shift</span>(<span class="ident">exception</span>: <span class="ident">Exception</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="ident">exception</span> {
+            <span class="ident">Exception</span>::<span class="ident">MemoryManagement</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="number">16</span>),
+            <span class="ident">Exception</span>::<span class="ident">BusFault</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="number">17</span>),
+            <span class="ident">Exception</span>::<span class="ident">UsageFault</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="number">18</span>),
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">armv8m_main</span>)]</span>
+            <span class="ident">Exception</span>::<span class="ident">SecureFault</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="number">19</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+        }
+    }
+
+    <span class="doccomment">/// Enable the exception</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the exception is enabled, when the exception is triggered, the exception handler will be executed instead of the</span>
+    <span class="doccomment">/// HardFault handler.</span>
+    <span class="doccomment">/// This function is only allowed on the following exceptions:</span>
+    <span class="doccomment">/// * `MemoryManagement`</span>
+    <span class="doccomment">/// * `BusFault`</span>
+    <span class="doccomment">/// * `UsageFault`</span>
+    <span class="doccomment">/// * `SecureFault` (can only be enabled from Secure state)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Calling this function with any other exception will do nothing.</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">armv6m</span>, <span class="ident">armv8m_base</span>)))]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enable</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">exception</span>: <span class="ident">Exception</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">shift</span>) <span class="op">=</span> <span class="ident">SCB</span>::<span class="ident">shcsr_enable_shift</span>(<span class="ident">exception</span>) {
+            <span class="comment">// The mutable reference to SCB makes sure that only this code is currently modifying</span>
+            <span class="comment">// the register.</span>
+            <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">shcsr</span>.<span class="ident">modify</span>(<span class="op">|</span><span class="ident">value</span><span class="op">|</span> <span class="ident">value</span> <span class="op">|</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">shift</span>)) }
+        }
+    }
+
+    <span class="doccomment">/// Disable the exception</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the exception is disabled, when the exception is triggered, the HardFault handler will be executed instead of the</span>
+    <span class="doccomment">/// exception handler.</span>
+    <span class="doccomment">/// This function is only allowed on the following exceptions:</span>
+    <span class="doccomment">/// * `MemoryManagement`</span>
+    <span class="doccomment">/// * `BusFault`</span>
+    <span class="doccomment">/// * `UsageFault`</span>
+    <span class="doccomment">/// * `SecureFault` (can not be changed from Non-secure state)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Calling this function with any other exception will do nothing.</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">armv6m</span>, <span class="ident">armv8m_base</span>)))]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">disable</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">exception</span>: <span class="ident">Exception</span>) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">shift</span>) <span class="op">=</span> <span class="ident">SCB</span>::<span class="ident">shcsr_enable_shift</span>(<span class="ident">exception</span>) {
+            <span class="comment">// The mutable reference to SCB makes sure that only this code is currently modifying</span>
+            <span class="comment">// the register.</span>
+            <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">shcsr</span>.<span class="ident">modify</span>(<span class="op">|</span><span class="ident">value</span><span class="op">|</span> <span class="ident">value</span> <span class="op">&amp;</span> <span class="op">!</span>(<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">shift</span>)) }
+        }
+    }
+
+    <span class="doccomment">/// Check if an exception is enabled</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This function is only allowed on the following exception:</span>
+    <span class="doccomment">/// * `MemoryManagement`</span>
+    <span class="doccomment">/// * `BusFault`</span>
+    <span class="doccomment">/// * `UsageFault`</span>
+    <span class="doccomment">/// * `SecureFault` (can not be read from Non-secure state)</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Calling this function with any other exception will read `false`.</span>
+    <span class="attribute">#[<span class="ident">inline</span>]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">any</span>(<span class="ident">armv6m</span>, <span class="ident">armv8m_base</span>)))]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_enabled</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">exception</span>: <span class="ident">Exception</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">shift</span>) <span class="op">=</span> <span class="ident">SCB</span>::<span class="ident">shcsr_enable_shift</span>(<span class="ident">exception</span>) {
+            (<span class="self">self</span>.<span class="ident">shcsr</span>.<span class="ident">read</span>() <span class="op">&amp;</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">shift</span>)) <span class="op">&gt;</span> <span class="number">0</span>
+        } <span class="kw">else</span> {
+            <span class="bool-val">false</span>
+        }
+    }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "cortex_m";</script><script src="../../../aliases.js"></script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "cortex_m";</script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

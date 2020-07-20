@@ -522,7 +522,7 @@ const APP: () = {
     }
 };
 </code></pre></pre>
-<p>Or, you can use the <a href="https://crates.io/crates/cargo-expand"><code>cargo-expand</code></a> subcommand. This subcommand will expand
+<p>Or, you can use the <a href="https://crates.io/crates/cargo-expand"><code>cargo-expand</code></a> sub-command. This sub-command will expand
 <em>all</em> the macros, including the <code>#[rtic::app]</code> attribute, and modules in your
 crate and print the output to the console.</p>
 <pre><code class="language-console">$ # produces the same output as before
@@ -530,7 +530,7 @@ $ cargo expand --example smallest | tail
 </code></pre>
 <h2><a class="header" href="#resource-de-structure-ing" id="resource-de-structure-ing">Resource de-structure-ing</a></h2>
 <p>When having a task taking multiple resources it can help in readability to split
-up the resource struct. Here're two examples on how this can be done:</p>
+up the resource struct. Here are two examples on how this can be done:</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
