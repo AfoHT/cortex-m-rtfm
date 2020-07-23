@@ -6,6 +6,7 @@ on:
       - master
       - staging
       - trying
+      - gha-tuning-binutils
 
 env:
   CARGO_TERM_COLOR: always
