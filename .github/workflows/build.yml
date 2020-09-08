@@ -6,6 +6,7 @@ on:
       - master
       - staging
       - trying
+      - task_local_experiment
 
 env:
   CARGO_TERM_COLOR: always
