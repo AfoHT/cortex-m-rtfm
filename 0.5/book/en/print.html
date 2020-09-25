@@ -355,6 +355,8 @@ then sends the microcontroller to sleep after running <code>init</code>.</p>
 <p>Like in <code>init</code>, <code>static mut</code> variables will be transformed into <code>&amp;'static mut</code>
 references that are safe to access.</p>
 <p>The example below shows that <code>idle</code> runs after <code>init</code>.</p>
+<p><strong>Note:</strong> The <code>loop {}</code> in idle cannot be empty as this will crash the microcontroller due to a bug
+in LLVM which miss-optimizes empty loops to a <code>UDF</code> instruction in release mode.</p>
 <pre><pre class="playpen"><code class="language-rust">
 # #![allow(unused_variables)]
 #fn main() {
@@ -386,7 +388,9 @@ const APP: () = {
 
         debug::exit(debug::EXIT_SUCCESS);
 
-        loop {}
+        loop {
+            cortex_m::asm::nop();
+        }
     }
 };
 
@@ -439,7 +443,9 @@ const APP: () = {
 
         debug::exit(debug::EXIT_SUCCESS);
 
-        loop {}
+        loop {
+            cortex_m::asm::nop();
+        }
     }
 
     #[task(binds = UART0)]
@@ -597,7 +603,9 @@ const APP: () = {
         // error: no `resources` field in `idle::Context`
         // _cx.resources.shared += 1;
 
-        loop {}
+        loop {
+            cortex_m::asm::nop();
+        }
     }
 
     // `shared` can be accessed from this context
@@ -1421,7 +1429,9 @@ const APP: () = {
         let _: idle::Schedule = cx.schedule;
         let _: idle::Spawn = cx.spawn;
 
-        loop {}
+        loop {
+            cortex_m::asm::nop();
+        }
     }
 
     #[task(binds = UART0, resources = [shared], schedule = [foo], spawn = [foo])]
@@ -1828,7 +1838,9 @@ const APP: () = {
     fn idle(_: idle::Context) -&gt; ! {
         debug::exit(debug::EXIT_SUCCESS);
 
-        loop {}
+        loop {
+            cortex_m::asm::nop();
+        }
     }
 
     #[task(capacity = 2, resources = [count], spawn = [log])]
