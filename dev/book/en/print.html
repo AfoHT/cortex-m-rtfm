@@ -180,7 +180,9 @@
 <p><a href="https://crates.io/crates/cortex-m-rtic"><img src="https://img.shields.io/crates/v/cortex-m-rtic" alt="crates.io" /></a>
 <a href="https://docs.rs/cortex-m-rtic"><img src="https://docs.rs/cortex-m-rtic/badge.svg" alt="docs.rs" /></a>
 <a href="https://rtic.rs/"><img src="https://img.shields.io/badge/web-rtic.rs-red.svg?style=flat&amp;label=book&amp;colorB=d33847" alt="book" /></a>
-<img src="https://img.shields.io/badge/rustc-1.36+-lightgray.svg" alt="rustc" /></p>
+<a href="https://github.com/rust-lang/rust/releases/tag/1.36.0"><img src="https://img.shields.io/badge/rustc-1.36+-lightgray.svg" alt="rustc" /></a>
+<a href="https://matrix.to/#/#rtic:matrix.org"><img src="https://img.shields.io/matrix/rtic:matrix.org" alt="matrix" /></a>
+<a href="https://hackmd.io/@xmis9JvZT8Gvo9lOEKyZ4Q/SkBJKsjuH"><img src="https://hackmd.io/badge.svg" alt="Meeting notes" /></a></p>
 <h2><a class="header" href="#features" id="features">Features</a></h2>
 <ul>
 <li>
@@ -223,20 +225,24 @@ there's no hard dependency on a dynamic memory allocator.</p>
 </li>
 <li>
 <p>This task model is amenable to known WCET (Worst Case Execution Time) analysis
-and scheduling analysis techniques. (Though we haven't yet developed Rust
-friendly tooling for that.)</p>
+and scheduling analysis techniques. (Though we haven't yet developed Rust</p>
+</li>
+<li>
+<p>Applications must be written using the 2018 edition.</p>
 </li>
 </ul>
 <h2><a class="header" href="#a-hrefhttpsrticrsuser-documentationa" id="a-hrefhttpsrticrsuser-documentationa"><a href="https://rtic.rs">User documentation</a></a></h2>
-<h2><a class="header" href="#a-hrefhttpsrticrs05apiapi-referencea" id="a-hrefhttpsrticrs05apiapi-referencea"><a href="https://rtic.rs/0.5/api/">API reference</a></a></h2>
+<h2><a class="header" href="#a-hrefhttpsrticrsstableapiapi-referencea" id="a-hrefhttpsrticrsstableapiapi-referencea"><a href="https://rtic.rs/stable/api/">API reference</a></a></h2>
 <h2><a class="header" href="#chat" id="chat">Chat</a></h2>
 <p>Join us and talk about RTIC in the <a href="https://matrix.to/#/#rtic:matrix.org">Matrix room</a>.</p>
+<p>Weekly meeting notes can be found over at <a href="https://hackmd.io/@xmis9JvZT8Gvo9lOEKyZ4Q/SkBJKsjuH">HackMD</a></p>
 <h2><a class="header" href="#contributing" id="contributing">Contributing</a></h2>
-<p>New features and big changes should go through the RFC process in the <a href="https://github.com/rtic-rs/rfcs">dedicated RFC repository</a>.</p>
+<p>New features and big changes should go through the RFC process in the
+<a href="https://github.com/rtic-rs/rfcs">dedicated RFC repository</a>.</p>
 <h2><a class="header" href="#acknowledgments" id="acknowledgments">Acknowledgments</a></h2>
-<p>This crate is based on <a href="http://www.rtfm-lang.org/">the Real-Time For the Masses language</a> created by the Embedded
-Systems group at <a href="https://www.ltu.se/?l=en">Luleå University of Technology</a>, led by <a href="https://www.ltu.se/staff/p/pln-1.11258?l=en">Prof. Per
-Lindgren</a>.</p>
+<p>This crate is based on <a href="http://www.rtfm-lang.org/">the Real-Time For the Masses language</a>
+created by the Embedded Systems group at <a href="https://www.ltu.se/?l=en">Luleå University of Technology</a>,
+led by <a href="https://www.ltu.se/staff/p/pln-1.11258?l=en">Prof. Per Lindgren</a>.</p>
 <h2><a class="header" href="#references" id="references">References</a></h2>
 <div class="footnote-definition" id="1"><sup class="footnote-definition-label">1</sup>
 <p>Eriksson, J., Häggström, F., Aittamaa, S., Kruglyak, A., &amp; Lindgren, P.
@@ -298,11 +304,13 @@ mod app {}
 <span class="boring">}
 </span></code></pre></pre>
 <p>All RTIC applications use the <a href="by-example/../../../api/cortex_m_rtic_macros/attr.app.html"><code>app</code></a> attribute (<code>#[app(..)]</code>). This attribute
-must be applied to a <code>mod</code>-item. The <code>app</code> attribute has
-a mandatory <code>device</code> argument that takes a <em>path</em> as a value. This path must
-point to a <em>peripheral access crate</em> (PAC) generated using <a href="https://crates.io/crates/svd2rust"><code>svd2rust</code></a>
-<strong>v0.14.x</strong> or newer. The <code>app</code> attribute will expand into a suitable entry
-point so it's not required to use the <a href="by-example/../../../api/cortex_m_rt_macros/attr.entry.html"><code>cortex_m_rt::entry</code></a> attribute.</p>
+must be applied to a <code>mod</code>-item. The <code>app</code> attribute has a mandatory <code>device</code>
+argument that takes a <em>path</em> as a value. This must be a full path pointing to a
+<em>peripheral access crate</em> (PAC) generated using <a href="https://crates.io/crates/svd2rust"><code>svd2rust</code></a> <strong>v0.14.x</strong> or
+newer. More details can be found in the <a href="by-example/./new.html">Starting a new project</a>
+section.</p>
+<p>The <code>app</code> attribute will expand into a suitable entry point so it's not required
+to use the <a href="by-example/../../../api/cortex_m_rt_macros/attr.entry.html"><code>cortex_m_rt::entry</code></a> attribute.</p>
 <h2><a class="header" href="#init" id="init"><code>init</code></a></h2>
 <p>Within the <code>app</code> module the attribute expects to find an initialization
 function marked with the <code>init</code> attribute. This function must have signature
@@ -576,7 +584,7 @@ limitations in the language, the error message is currently far from helpful: it
 will say something along the lines of &quot;evaluation of constant value failed&quot; and
 the span of the error will <em>not</em> point out to the problematic interrupt value --
 we are sorry about this!</p>
-<h2><a class="header" href="#resources" id="resources">Resources</a></h2>
+<h1><a class="header" href="#resources" id="resources">Resources</a></h1>
 <p>The framework provides an abstraction to share data between any of the contexts
 we saw in the previous section (task handlers, <code>init</code> and <code>idle</code>): resources.</p>
 <p>Resources are data visible only to functions declared within the <code>#[app]</code>
@@ -850,7 +858,9 @@ are required to access the resource even if the resource is contended by several
 tasks running at different priorities. The downside is that the task only gets a
 shared reference (<code>&amp;-</code>) to the resource, limiting the operations it can perform
 on it, but where a shared reference is enough this approach reduces the number
-of required locks.</p>
+of required locks. In addition to simple immutable data, this shared access can
+be useful where the resource type safely implements interior mutability, with
+appropriate locking or atomic operations of its own.</p>
 <p>Note that in this release of RTIC it is not possible to request both exclusive
 access (<code>&amp;mut-</code>) and shared access (<code>&amp;-</code>) to the <em>same</em> resource from different
 tasks. Attempting to do so will result in a compile error.</p>
@@ -1768,7 +1778,24 @@ $ rm memory.x build.rs
     -L https://github.com/rtic-rs/cortex-m-rtic/raw/v0.5.3/examples/init.rs \
     &gt; src/main.rs
 </code></pre>
-<p>That example depends on the <code>panic-semihosting</code> crate:</p>
+<p>The <code>init</code> example uses the <code>lm3s6965</code> device. Remember to adjust the <code>device</code>
+argument in the app macro attribute to match the path of your PAC crate, if
+different, and add peripherals or other arguments if needed. Although aliases
+can be used, this needs to be a full path (from the crate root). For many
+devices, it is common for the HAL implementation crate (aliased as <code>hal</code>) or
+Board Support crate to re-export the PAC as <code>pac</code>, leading to a pattern similar
+to the below:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>use abcd123_hal as hal;
+//...
+
+#[rtic::app(device = crate::hal::pac, peripherals = true, monotonic = rtic::cyccnt::CYCCNT)]
+mod app { /*...*/ }
+<span class="boring">}
+</span></code></pre></pre>
+<p>The <code>init</code> example also depends on the <code>panic-semihosting</code> crate:</p>
 <pre><code class="language-console">$ cargo add panic-semihosting
 </code></pre>
 <ol start="5">
@@ -2237,9 +2264,9 @@ mod app {
 It also acts as a comparing reference between versions.</p>
 <h1><a class="header" href="#migrating-from-v05x-to-v060" id="migrating-from-v05x-to-v060">Migrating from v0.5.x to v0.6.0</a></h1>
 <p>This section describes how to upgrade from v0.5.x to v0.6.0 of the RTIC framework.</p>
-<h3><a class="header" href="#cargotoml---version-bump" id="cargotoml---version-bump"><code>Cargo.toml</code> - version bump</a></h3>
+<h2><a class="header" href="#cargotoml---version-bump" id="cargotoml---version-bump"><code>Cargo.toml</code> - version bump</a></h2>
 <p>Change the version of <code>cortex-m-rtic</code> to <code>&quot;0.6.0&quot;</code>.</p>
-<h3><a class="header" href="#module-instead-of-const" id="module-instead-of-const">Module instead of Const</a></h3>
+<h2><a class="header" href="#module-instead-of-const" id="module-instead-of-const">Module instead of Const</a></h2>
 <p>With the support of attributes on modules the <code>const APP</code> workaround is not needed.</p>
 <p>Change</p>
 <pre><pre class="playground"><code class="language-rust">
@@ -2264,7 +2291,7 @@ mod app {
 <p>Now that a regular Rust module is used it means it is possible to have custom
 user code within that module.
 Additionally, it means that <code>use</code>-statements for resources etc may be required.</p>
-<h3><a class="header" href="#init-always-returns-late-resources" id="init-always-returns-late-resources">Init always returns late resources</a></h3>
+<h2><a class="header" href="#init-always-returns-late-resources" id="init-always-returns-late-resources">Init always returns late resources</a></h2>
 <p>In order to make the API more symmetric the #[init]-task always returns a late resource.</p>
 <p>From this:</p>
 <pre><pre class="playground"><code class="language-rust">
@@ -2296,7 +2323,7 @@ mod app {
 }
 <span class="boring">}
 </span></code></pre></pre>
-<h3><a class="header" href="#resources-struct---resources" id="resources-struct---resources">Resources struct - #[resources]</a></h3>
+<h2><a class="header" href="#resources-struct---resources" id="resources-struct---resources">Resources struct - #[resources]</a></h2>
 <p>Previously the RTIC resources had to be in in a struct named exactly &quot;Resources&quot;:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -2331,7 +2358,7 @@ struct whateveryouwant {
 <h1><a class="header" href="#migrating-from-v04x-to-v050" id="migrating-from-v04x-to-v050">Migrating from v0.4.x to v0.5.0</a></h1>
 <p>This section covers how to upgrade an application written against RTIC v0.4.x to
 the version v0.5.0 of the framework.</p>
-<h3><a class="header" href="#cargotoml" id="cargotoml"><code>Cargo.toml</code></a></h3>
+<h2><a class="header" href="#cargotoml" id="cargotoml"><code>Cargo.toml</code></a></h2>
 <p>First, the version of the <code>cortex-m-rtic</code> dependency needs to be updated to
 <code>&quot;0.5.0&quot;</code>. The <code>timer-queue</code> feature needs to be removed.</p>
 <pre><code class="language-toml">[dependencies.cortex-m-rtic]
@@ -2345,7 +2372,7 @@ version = &quot;0.5.0&quot;
 features = [&quot;timer-queue&quot;]
 #           ^^^^^^^^^^^^^
 </code></pre>
-<h3><a class="header" href="#context-argument" id="context-argument"><code>Context</code> argument</a></h3>
+<h2><a class="header" href="#context-argument" id="context-argument"><code>Context</code> argument</a></h2>
 <p>All functions inside the <code>#[rtic::app]</code> item need to take as first argument a
 <code>Context</code> structure. This <code>Context</code> type will contain the variables that were
 magically injected into the scope of the function by version v0.4.x of the
@@ -2397,7 +2424,7 @@ const APP: () = {
 };
 <span class="boring">}
 </span></code></pre></pre>
-<h3><a class="header" href="#resources-1" id="resources-1">Resources</a></h3>
+<h2><a class="header" href="#resources-1" id="resources-1">Resources</a></h2>
 <p>The syntax used to declare resources has been changed from <code>static mut</code>
 variables to a <code>struct Resources</code>.</p>
 <pre><pre class="playground"><code class="language-rust">
@@ -2421,7 +2448,7 @@ const APP: () = {
 };
 <span class="boring">}
 </span></code></pre></pre>
-<h3><a class="header" href="#device-peripherals" id="device-peripherals">Device peripherals</a></h3>
+<h2><a class="header" href="#device-peripherals" id="device-peripherals">Device peripherals</a></h2>
 <p>If your application was accessing the device peripherals in <code>#[init]</code> through
 the <code>device</code> variable then you'll need to add <code>peripherals = true</code> to the
 <code>#[rtic::app]</code> attribute to continue to access the device peripherals through
@@ -2459,7 +2486,7 @@ const APP: () = {
 };
 <span class="boring">}
 </span></code></pre></pre>
-<h3><a class="header" href="#interrupt-and-exception" id="interrupt-and-exception"><code>#[interrupt]</code> and <code>#[exception]</code></a></h3>
+<h2><a class="header" href="#interrupt-and-exception" id="interrupt-and-exception"><code>#[interrupt]</code> and <code>#[exception]</code></a></h2>
 <p>The <code>#[interrupt]</code> and <code>#[exception]</code> attributes have been removed. To declare
 hardware tasks in v0.5.x use the <code>#[task]</code> attribute with the <code>binds</code> argument.</p>
 <p>Change this:</p>
@@ -2505,8 +2532,9 @@ const APP: () = {
 };
 <span class="boring">}
 </span></code></pre></pre>
-<h3><a class="header" href="#schedule" id="schedule"><code>schedule</code></a></h3>
-<p>The <code>timer-queue</code> feature has been removed. To use the <code>schedule</code> API one must
+<h2><a class="header" href="#schedule" id="schedule"><code>schedule</code></a></h2>
+<p>The <code>schedule</code> API no longer requires the <code>timer-queue</code> cargo feature, which has
+been removed. To use the <code>schedule</code> API one must
 first define the monotonic timer the runtime will use using the <code>monotonic</code>
 argument of the <code>#[rtic::app]</code> attribute. To continue using the cycle counter
 (CYCCNT) as the monotonic timer, and match the behavior of version v0.4.x, add
