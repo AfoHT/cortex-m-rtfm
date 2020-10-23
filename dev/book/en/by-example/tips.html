@@ -199,7 +199,6 @@ use rtic::Mutex;
 mod app {
     use cortex_m_semihosting::{debug, hprintln};
     use lm3s6965::Interrupt;
-    use rtic::Exclusive;
 
     #[resources]
     struct Resources {
@@ -235,11 +234,8 @@ mod app {
 
         hprintln!(&quot;UART1(STATE = {})&quot;, *STATE).unwrap();
 
-        // just to show that `shared` can be accessed directly
-        *c.resources.shared += 0;
-
-        // second argument has type `Exclusive&lt;u32&gt;`
-        super::advance(STATE, Exclusive(c.resources.shared));
+        // second argument has type `resources::shared`
+        super::advance(STATE, c.resources.shared);
     }
 }
 
@@ -286,7 +282,7 @@ the program has been compiled using the <code>dev</code> profile.</p>
 
 use panic_semihosting as _;
 
-#[rtic::app(device = lm3s6965)]
+#[rtic::app(device = lm3s6965, dispatchers = [SSI0, QEI0])]
 mod app {
     use cortex_m_semihosting::debug;
     #[cfg(debug_assertions)]
@@ -317,12 +313,12 @@ mod app {
     }
 
     #[task(capacity = 2, resources = [count])]
-    fn foo(_cx: foo::Context) {
+    fn foo(mut _cx: foo::Context) {
         #[cfg(debug_assertions)]
         {
-            *_cx.resources.count += 1;
+            _cx.resources.count.lock(|count| *count += 1);
 
-            log::spawn(*_cx.resources.count).unwrap();
+            log::spawn(_cx.resources.count.lock(|count| *count)).unwrap();
         }
 
         // this wouldn't compile in `release` mode
@@ -340,14 +336,6 @@ mod app {
             if n == 1 { &quot;&quot; } else { &quot;s&quot; }
         )
         .ok();
-    }
-
-    // RTIC requires that unused interrupts are declared in an extern block when
-    // using software tasks; these free interrupts will be used to dispatch the
-    // software tasks.
-    extern &quot;C&quot; {
-        fn SSI0();
-        fn QEI0();
     }
 }
 <span class="boring">}
@@ -386,7 +374,14 @@ adding a <code>ramfunc</code> attribute in a future release.</p>
 
 use panic_semihosting as _;
 
-#[rtic::app(device = lm3s6965)]
+#[rtic::app(
+    device = lm3s6965,
+    dispatchers = [
+        UART0,
+        #[link_section = &quot;.data.UART1&quot;]
+        UART1
+    ])
+]
 mod app {
     use cortex_m_semihosting::{debug, hprintln};
 
@@ -411,14 +406,6 @@ mod app {
     #[task(priority = 2)]
     fn bar(_: bar::Context) {
         foo::spawn().unwrap();
-    }
-
-    extern &quot;C&quot; {
-        fn UART0();
-
-        // run the task dispatcher from RAM
-        #[link_section = &quot;.data.UART1&quot;]
-        fn UART1();
     }
 }
 <span class="boring">}
@@ -466,7 +453,7 @@ use rtic::app;
 // Declare a pool of 128-byte memory blocks
 pool!(P: [u8; 128]);
 
-#[app(device = lm3s6965)]
+#[app(device = lm3s6965, dispatchers = [SSI0, QEI0])]
 mod app {
     use crate::{Box, Pool};
     use cortex_m_semihosting::{debug, hprintln};
@@ -515,14 +502,6 @@ mod app {
 
         // this is done automatically so we can omit the call to `drop`
         // drop(x);
-    }
-
-    // RTIC requires that unused interrupts are declared in an extern block when
-    // using software tasks; these free interrupts will be used to dispatch the
-    // software tasks.
-    extern &quot;C&quot; {
-        fn SSI0();
-        fn QEI0();
     }
 }
 <span class="boring">}
@@ -608,7 +587,7 @@ mod app {
     }
 
     // Direct destructure
-    #[task(binds = UART0, resources = [a, b, c])]
+    #[task(binds = UART0, resources = [&amp;a, &amp;b, &amp;c])]
     fn uart0(cx: uart0::Context) {
         let a = cx.resources.a;
         let b = cx.resources.b;
@@ -618,7 +597,7 @@ mod app {
     }
 
     // De-structure-ing syntax
-    #[task(binds = UART1, resources = [a, b, c])]
+    #[task(binds = UART1, resources = [&amp;a, &amp;b, &amp;c])]
     fn uart1(cx: uart1::Context) {
         let uart1::Resources { a, b, c } = cx.resources;
 
