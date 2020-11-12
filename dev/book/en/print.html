@@ -326,11 +326,10 @@ to Cortex-M where the <code>bare_metal::CriticalSection</code> token is availabl
 And optionally, device specific peripherals through the <code>core</code> and <code>device</code> fields
 of <code>init::Context</code>.</p>
 <p><code>static mut</code> variables declared at the beginning of <code>init</code> will be transformed
-into <code>&amp;'static mut</code> references that are safe to access.</p>
+into <code>&amp;'static mut</code> references that are safe to access. Notice, this feature may be deprecated in next release, see <code>task_local</code> resources.</p>
 <p>The example below shows the types of the <code>core</code>, <code>device</code> and <code>cs</code> fields, and
 showcases safe access to a <code>static mut</code> variable. The <code>device</code> field is only
-available when the <code>peripherals</code> argument is set to <code>true</code> (it defaults to
-<code>false</code>).</p>
+available when the <code>peripherals</code> argument is set to <code>true</code> (default). In the rare case you want to implement an ultra-slim application you can explicitly set <code>peripherals</code> to <code>false</code>.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -388,10 +387,10 @@ so it must run forever.</p>
 <p>When no <code>idle</code> function is declared, the runtime sets the <a href="https://developer.arm.com/docs/100737/0100/power-management/sleep-mode/sleep-on-exit-bit">SLEEPONEXIT</a> bit and
 then sends the microcontroller to sleep after running <code>init</code>.</p>
 <p>Like in <code>init</code>, <code>static mut</code> variables will be transformed into <code>&amp;'static mut</code>
-references that are safe to access.</p>
+references that are safe to access. Notice, this feature may be deprecated in the next release, see <code>task_local</code> resources.</p>
 <p>The example below shows that <code>idle</code> runs after <code>init</code>.</p>
-<p><strong>Note:</strong> The <code>loop {}</code> in idle cannot be empty as this will crash the microcontroller due to a bug
-in LLVM which miss-optimizes empty loops to a <code>UDF</code> instruction in release mode.</p>
+<p><strong>Note:</strong> The <code>loop {}</code> in idle cannot be empty as this will crash the microcontroller due to
+LLVM compiling empty loops to an <code>UDF</code> instruction in release mode. To avoid UB, the loop needs to imply a &quot;side-effect&quot; by inserting an assembly instruction (e.g., <code>WFI</code>) or a <code>continue</code>.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -587,9 +586,9 @@ GPIOA - start
 GPIOA - end
 </code></pre>
 <p>Note that the task <code>gpiob</code> does <em>not</em> preempt task <code>gpioc</code> because its priority
-is the <em>same</em> as <code>gpioc</code>'s. However, once <code>gpioc</code> terminates the execution of
-task, <code>gpiob</code> is prioritized over <code>gpioa</code> due to its higher priority. <code>gpioa</code>
-is resumed only after <code>gpiob</code> terminates.</p>
+is the <em>same</em> as <code>gpioc</code>'s. However, once <code>gpioc</code> returns, the execution of
+task <code>gpiob</code> is prioritized over <code>gpioa</code> due to its higher priority. <code>gpioa</code>
+is resumed only after <code>gpiob</code> returns.</p>
 <p>One more note about priorities: choosing a priority higher than what the device
 supports (that is <code>1 &lt;&lt; NVIC_PRIO_BITS</code>) will result in a compile error. Due to
 limitations in the language, the error message is currently far from helpful: it
@@ -614,8 +613,7 @@ intends to access in its corresponding metadata attribute using the <code>resour
 argument. This argument takes a list of resource names as its value. The listed
 resources are made available to the context under the <code>resources</code> field of the
 <code>Context</code> structure.</p>
-<p>The example application shown below contains two interrupt handlers that share
-access to a resource named <code>shared</code>.</p>
+<p>The example application shown below contains two interrupt handlers that share access to a resource named <code>shared</code>.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -662,6 +660,7 @@ mod app {
     }
 
     // `shared` can be accessed from this context
+    // defaults to priority 1
     #[task(binds = UART0, resources = [shared])]
     fn uart0(mut cx: uart0::Context) {
         let shared = cx.resources.shared.lock(|shared| {
@@ -673,7 +672,8 @@ mod app {
     }
 
     // `shared` can be accessed from this context
-    #[task(binds = UART1, resources = [shared])]
+    // explicitly set to priority 2
+    #[task(binds = UART1, resources = [shared], priority = 2)]
     fn uart1(mut cx: uart1::Context) {
         let shared = cx.resources.shared.lock(|shared| {
             *shared += 1;
@@ -686,31 +686,17 @@ mod app {
 <span class="boring">}
 </span></code></pre></pre>
 <pre><code class="language-console">$ cargo run --example resource
-UART0: shared = 1
-UART1: shared = 2
+UART1: shared = 1
+UART0: shared = 2
 </code></pre>
-<p>Note that the <code>shared</code> resource cannot be accessed from <code>idle</code>. Attempting to do
-so results in a compile error.</p>
+<p>Note that the <code>shared</code> resource cannot be accessed from <code>idle</code>. Attempting to do so results in a compile error.</p>
 <h2><a class="header" href="#lock" id="lock"><code>lock</code></a></h2>
-<p>In the presence of preemption critical sections are required to mutate shared
-data in a data race free manner. As the framework has complete knowledge over
-the priorities of tasks and which tasks can access which resources it enforces
-that critical sections are used where required for memory safety.</p>
-<p>Where a critical section is required the framework hands out a resource proxy
-instead of a reference. This resource proxy is a structure that implements the
-<a href="by-example/../../../api/rtic/trait.Mutex.html"><code>Mutex</code></a> trait. The only method on this trait, <a href="by-example/../../../api/rtic/trait.Mutex.html#method.lock"><code>lock</code></a>, runs its closure
-argument in a critical section.</p>
-<p>The critical section created by the <code>lock</code> API is based on dynamic priorities:
-it temporarily raises the dynamic priority of the context to a <em>ceiling</em>
-priority that prevents other tasks from preempting the critical section. This
-synchronization protocol is known as the <a href="https://en.wikipedia.org/wiki/Priority_ceiling_protocol">Immediate Ceiling Priority Protocol
-(ICPP)</a>.</p>
-<p>In the example below we have three interrupt handlers with priorities ranging
-from one to three. The two handlers with the lower priorities contend for the
-<code>shared</code> resource. The lowest priority handler needs to <code>lock</code> the
-<code>shared</code> resource to access its data, whereas the mid priority handler can
-directly access its data. The highest priority handler, which cannot access
-the <code>shared</code> resource, is free to preempt the critical section created by the
+<p>Critical sections are required to access shared mutable data in a data race-free manner.</p>
+<p>The <code>resources</code> field of the passed <code>Context</code> implements the <a href="by-example/../../../api/rtic/trait.Mutex.html"><code>Mutex</code></a> trait for each shared resource accessible to the task.</p>
+<p>The only method on this trait, <a href="by-example/../../../api/rtic/trait.Mutex.html#method.lock"><code>lock</code></a>, runs its closure argument in a critical section.</p>
+<p>The critical section created by the <code>lock</code> API is based on dynamic priorities: it temporarily raises the dynamic priority of the context to a <em>ceiling</em> priority that prevents other tasks from preempting the critical section. This synchronization protocol is known as the <a href="https://en.wikipedia.org/wiki/Priority_ceiling_protocol">Immediate Ceiling Priority Protocol
+(ICPP)</a>, and complies with <a href="https://en.wikipedia.org/wiki/Stack_Resource_Policy">Stack Resource Policy(SRP)</a> based scheduling of RTIC.</p>
+<p>In the example below we have three interrupt handlers with priorities ranging from one to three. The two handlers with the lower priorities contend for the <code>shared</code> resource and need to lock the resource for accessing the data. The highest priority handler, which do nat access the <code>shared</code> resource, is free to preempt the critical section created by the
 lowest priority handler.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -795,17 +781,9 @@ D - shared = 2
 E
 </code></pre>
 <h2><a class="header" href="#late-resources" id="late-resources">Late resources</a></h2>
-<p>Late resources are resources that are not given an initial value at compile time
-using the <code>#[init]</code> attribute but instead are initialized at runtime using the
-<code>init::LateResources</code> values returned by the <code>init</code> function.</p>
-<p>Late resources are useful for <em>moving</em> (as in transferring the ownership of)
-peripherals initialized in <code>init</code> into interrupt handlers.</p>
-<p>The example below uses late resources to establish a lockless, one-way channel
-between the <code>UART0</code> interrupt handler and the <code>idle</code> task. A single producer
-single consumer <a href="by-example/../../../api/heapless/spsc/struct.Queue.html"><code>Queue</code></a> is used as the channel. The queue is split into
-consumer and producer end points in <code>init</code> and then each end point is stored
-in a different resource; <code>UART0</code> owns the producer resource and <code>idle</code> owns
-the consumer resource.</p>
+<p>Late resources are resources that are not given an initial value at compile time using the <code>#[init]</code> attribute but instead are initialized at runtime using the <code>init::LateResources</code> values returned by the <code>init</code> function.</p>
+<p>Late resources are useful e.g., to <em>move</em> (as in transferring the ownership of) peripherals initialized in <code>init</code> into tasks.</p>
+<p>The example below uses late resources to establish a lockless, one-way channel between the <code>UART0</code> interrupt handler and the <code>idle</code> task. A single producer single consumer <a href="by-example/../../../api/heapless/spsc/struct.Queue.html"><code>Queue</code></a> is used as the channel. The queue is split into consumer and producer end points in <code>init</code> and then each end point is stored in a different resource; <code>UART0</code> owns the producer resource and <code>idle</code> owns the consumer resource.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -869,24 +847,11 @@ mod app {
 received message: 42
 </code></pre>
 <h2><a class="header" href="#only-shared-access" id="only-shared-access">Only shared access</a></h2>
-<p>By default the framework assumes that all tasks require exclusive access
-(<code>&amp;mut-</code>) to resources but it is possible to specify that a task only requires
-shared access (<code>&amp;-</code>) to a resource using the <code>&amp;resource_name</code> syntax in the
-<code>resources</code> list.</p>
-<p>The advantage of specifying shared access (<code>&amp;-</code>) to a resource is that no locks
-are required to access the resource even if the resource is contended by several
-tasks running at different priorities. The downside is that the task only gets a
-shared reference (<code>&amp;-</code>) to the resource, limiting the operations it can perform
-on it, but where a shared reference is enough this approach reduces the number
-of required locks. In addition to simple immutable data, this shared access can
-be useful where the resource type safely implements interior mutability, with
+<p>By default the framework assumes that all tasks require exclusive access (<code>&amp;mut-</code>) to resources but it is possible to specify that a task only requires shared access (<code>&amp;-</code>) to a resource using the <code>&amp;resource_name</code> syntax in the <code>resources</code> list.</p>
+<p>The advantage of specifying shared access (<code>&amp;-</code>) to a resource is that no locks are required to access the resource even if the resource is contended by several tasks running at different priorities. The downside is that the task only gets a shared reference (<code>&amp;-</code>) to the resource, limiting the operations it can perform on it, but where a shared reference is enough this approach reduces the number of required locks. In addition to simple immutable data, this shared access can be useful where the resource type safely implements interior mutability, with
 appropriate locking or atomic operations of its own.</p>
-<p>Note that in this release of RTIC it is not possible to request both exclusive
-access (<code>&amp;mut-</code>) and shared access (<code>&amp;-</code>) to the <em>same</em> resource from different
-tasks. Attempting to do so will result in a compile error.</p>
-<p>In the example below a key (e.g. a cryptographic key) is loaded (or created) at
-runtime and then used from two tasks that run at different priorities without
-any kind of lock.</p>
+<p>Note that in this release of RTIC it is not possible to request both exclusive access (<code>&amp;mut-</code>) and shared access (<code>&amp;-</code>) to the <em>same</em> resource from different tasks. Attempting to do so will result in a compile error.</p>
+<p>In the example below a key (e.g. a cryptographic key) is loaded (or created) at runtime and then used from two tasks that run at different priorities without any kind of lock.</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
@@ -936,20 +901,28 @@ mod app {
 UART1(key = 0xdeadbeef)
 UART0(key = 0xdeadbeef)
 </code></pre>
+<h2><a class="header" href="#lock-free-resource-access-of-mutable-resources" id="lock-free-resource-access-of-mutable-resources">Lock-free resource access of mutable resources</a></h2>
+<p>There exists two other options dealing with resources</p>
+<ul>
+<li><code>#[lock_free]</code>: there might be several tasks with the same priority
+accessing the resource without critical section. Since tasks with the
+same priority never can preempt another task on the same priority
+this is safe.</li>
+<li><code>#[task_local]</code>: there must be only one task using this resource,
+similar to a <code>static mut</code> task local resource, but (optionally) set-up by init.</li>
+</ul>
 <h1><a class="header" href="#software-tasks" id="software-tasks">Software tasks</a></h1>
 <p>In addition to hardware tasks, which are invoked by the hardware in response to
 hardware events, RTIC also supports <em>software</em> tasks which can be spawned by the
 application from any execution context.</p>
 <p>Software tasks can also be assigned priorities and, under the hood, are
 dispatched from interrupt handlers. RTIC requires that free interrupts are
-declared in an <code>extern</code> block when using software tasks; some of these free
+declared in the <code>dispatchers</code> app argument when using software tasks; some of these free
 interrupts will be used to dispatch the software tasks. An advantage of software
 tasks over hardware tasks is that many tasks can be mapped to a single interrupt
 handler.</p>
 <p>Software tasks are also declared using the <code>task</code> attribute but the <code>binds</code>
-argument must be omitted. To be able to spawn a software task from a context
-the name of the task must appear in the <code>spawn</code> argument of the context
-attribute (<code>init</code>, <code>idle</code>, <code>task</code>, etc.).</p>
+argument must be omitted.</p>
 <p>The example below showcases three software tasks that run at 2 different
 priorities. The three software tasks are mapped to 2 interrupts handlers.</p>
 <pre><pre class="playground"><code class="language-rust">
@@ -1222,9 +1195,7 @@ operation must return an error, any error type.</p>
 on the built-in CYCle CouNTer (CYCCNT). Note that this is a 32-bit timer clocked
 at the frequency of the CPU and as such it is not suitable for tracking time
 spans in the order of seconds.</p>
-<p>To be able to schedule a software task from a context the name of the task must
-first appear in the <code>schedule</code> argument of the context attribute. When
-scheduling a task the (user-defined) <code>Instant</code> at which the task should be
+<p>When scheduling a task the (user-defined) <code>Instant</code> at which the task should be
 executed must be passed as the first argument of the <code>schedule</code> invocation.</p>
 <p>Additionally, the chosen <code>monotonic</code> timer must be configured and initialized
 during the <code>#[init]</code> phase. Note that this is <em>also</em> the case if you choose to
@@ -1504,32 +1475,8 @@ tasks that run at <em>different</em> priorities. This occurs in a few places: in
 message passing, in shared resources and in the initialization of late
 resources.</p>
 <p>The <code>app</code> attribute will enforce that <code>Send</code> is implemented where required so
-you don't need to worry much about it. It's more important to know where you do
-<em>not</em> need the <code>Send</code> trait: on types that are transferred between tasks that
-run at the <em>same</em> priority. This occurs in two places: in message passing and in
-shared resources.</p>
-<p>The example below shows where a type that doesn't implement <code>Send</code> can be used.</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>{{#include ../../../../examples/not-send.rs}}
-<span class="boring">}
-</span></code></pre></pre>
-<p>It's important to note that late initialization of resources is effectively a
-send operation where the initial value is sent from the background context,
-which has the lowest priority of <code>0</code>, to a task, which will run at a priority
-greater than or equal to <code>1</code>. Thus all late resources need to implement the
-<code>Send</code> trait, except for those exclusively accessed by <code>idle</code>, which runs at a
-priority of <code>0</code>.</p>
-<p>Sharing a resource with <code>init</code> can be used to implement late initialization, see
-example below. For that reason, resources shared with <code>init</code> must also implement
-the <code>Send</code> trait.</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>{{#include ../../../../examples/shared-with-init.rs}}
-<span class="boring">}
-</span></code></pre></pre>
+you don't need to worry much about it. Currently all types that are passed need
+to be <code>Send</code> in RTIC, however this restriction might be relaxed in the future.</p>
 <h2><a class="header" href="#sync" id="sync"><code>Sync</code></a></h2>
 <p>Similarly, <a href="https://doc.rust-lang.org/core/marker/trait.Sync.html"><code>Sync</code></a> is a marker trait for &quot;types for which it is safe to share
 references between threads&quot;, according to its definition in <code>core</code>. In the
@@ -1623,9 +1570,45 @@ $ rm memory.x build.rs
 <li>Write your RTIC application.</li>
 </ol>
 <p>Here I'll use the <code>init</code> example from the <code>cortex-m-rtic</code> crate.</p>
-<pre><code class="language-console">$ curl \
-    -L https://github.com/rtic-rs/cortex-m-rtic/raw/v0.5.3/examples/init.rs \
-    &gt; src/main.rs
+<p>The examples are found in the <code>examples</code> folder, and the contents
+of <code>init.rs</code> is shown here:</p>
+<pre><code class="language-console">//! examples/init.rs
+
+#![deny(unsafe_code)]
+#![deny(warnings)]
+#![no_main]
+#![no_std]
+
+use panic_semihosting as _;
+
+#[rtic::app(device = lm3s6965, peripherals = true)]
+mod app {
+    use cortex_m_semihosting::{debug, hprintln};
+
+    #[init]
+    fn init(cx: init::Context) -&gt; init::LateResources {
+        static mut X: u32 = 0;
+
+        // Cortex-M peripherals
+        let _core: cortex_m::Peripherals = cx.core;
+
+        // Device specific peripherals
+        let _device: lm3s6965::Peripherals = cx.device;
+
+        // Safe access to local `static mut` variable
+        let _x: &amp;'static mut u32 = X;
+
+        // Access to the critical section token,
+        // to indicate that this is a critical seciton
+        let _cs_token: bare_metal::CriticalSection = cx.cs;
+
+        hprintln!(&quot;init&quot;).unwrap();
+
+        debug::exit(debug::EXIT_SUCCESS);
+
+        init::LateResources {}
+    }
+}
 </code></pre>
 <p>The <code>init</code> example uses the <code>lm3s6965</code> device. Remember to adjust the <code>device</code>
 argument in the app macro attribute to match the path of your PAC crate, if
@@ -1656,14 +1639,8 @@ init
 </code></pre>
 <h1><a class="header" href="#tips--tricks" id="tips--tricks">Tips &amp; tricks</a></h1>
 <h2><a class="header" href="#generics" id="generics">Generics</a></h2>
-<p>Resources may appear in contexts as resource proxies or as unique references
-(<code>&amp;mut-</code>) depending on the priority of the task. Because the same resource may
-appear as <em>different</em> types in different contexts one cannot refactor a common
-operation that uses resources into a plain function; however, such refactor is
-possible using <em>generics</em>.</p>
-<p>All resource proxies implement the <code>rtic::Mutex</code> trait. On the other hand,
-unique references (<code>&amp;mut-</code>) do <em>not</em> implement this trait (due to limitations in
-the trait system) but one can wrap these references in the <a href="by-example/../../../api/rtic/struct.Exclusive.html"><code>rtic::Exclusive</code></a>
+<p>All resource proxies implement the <code>rtic::Mutex</code> trait.
+If a resource does not implement this, one can wrap it in the <a href="by-example/../../../api/rtic/struct.Exclusive.html"><code>rtic::Exclusive</code></a>
 newtype which does implement the <code>Mutex</code> trait. With the help of this newtype
 one can write a generic function that operates on generic resources and call it
 from different tasks to perform some operation on the same set of resources.
@@ -1748,13 +1725,12 @@ shared: 1 -&gt; 2
 UART1(STATE = 1)
 shared: 2 -&gt; 4
 </code></pre>
-<p>Using generics also lets you change the static priorities of tasks during
-development without having to rewrite a bunch code every time.</p>
 <h2><a class="header" href="#conditional-compilation" id="conditional-compilation">Conditional compilation</a></h2>
 <p>You can use conditional compilation (<code>#[cfg]</code>) on resources (the fields of
-<code>struct Resources</code>) and tasks (the <code>fn</code> items). The effect of using <code>#[cfg]</code>
-attributes is that the resource / task will <em>not</em> be available through the
-corresponding <code>Context</code> <code>struct</code> if the condition doesn't hold.</p>
+<code>#[resources] struct Resources</code>) and tasks (the <code>fn</code> items).
+The effect of using <code>#[cfg]</code> attributes is that the resource / task
+will <em>not</em> be available through the corresponding <code>Context</code> <code>struct</code>
+if the condition doesn't hold.</p>
 <p>The example below logs a message whenever the <code>foo</code> task is spawned, but only if
 the program has been compiled using the <code>dev</code> profile.</p>
 <pre><pre class="playground"><code class="language-rust">
@@ -2005,7 +1981,7 @@ options:</p>
 file contains the expansion of the <code>#[rtic::app]</code> item (not your whole program!)
 of the <em>last built</em> (via <code>cargo build</code> or <code>cargo check</code>) RTIC application. The
 expanded code is not pretty printed by default so you'll want to run <code>rustfmt</code>
-over it before you read it.</p>
+on it before you read it.</p>
 <pre><code class="language-console">$ cargo build --example foo
 
 $ rustfmt target/rtic-expansion.rs
@@ -2100,6 +2076,31 @@ It also acts as a comparing reference between versions.</p>
 <p>This section describes how to upgrade from v0.5.x to v0.6.0 of the RTIC framework.</p>
 <h2><a class="header" href="#cargotoml---version-bump" id="cargotoml---version-bump"><code>Cargo.toml</code> - version bump</a></h2>
 <p>Change the version of <code>cortex-m-rtic</code> to <code>&quot;0.6.0&quot;</code>.</p>
+<h2><a class="header" href="#mod-instead-of-const" id="mod-instead-of-const"><code>mod</code> instead of <code>const</code></a></h2>
+<p>With the support of attributes on modules the <code>const APP</code> workaround is not needed.</p>
+<p>Change</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[rtic::app(/* .. */)]
+const APP: () = {
+  [code here]
+};
+<span class="boring">}
+</span></code></pre></pre>
+<p>into</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[rtic::app(/* .. */)]
+mod app {
+  [code here]
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Now that a regular Rust module is used it means it is possible to have custom
+user code within that module.
+Additionally, it means that <code>use</code>-statements for resources etc may be required.</p>
 <h2><a class="header" href="#move-dispatchers-from-extern-c-to-app-arguments" id="move-dispatchers-from-extern-c-to-app-arguments">Move Dispatchers from <code>extern &quot;C&quot;</code> to app arguments.</a></h2>
 <p>Change</p>
 <pre><pre class="playground"><code class="language-rust">
@@ -2130,31 +2131,6 @@ mod app {
 <span class="boring">}
 </span></code></pre></pre>
 <p>This works also for ram functions, see examples/ramfunc.rs</p>
-<h2><a class="header" href="#module-instead-of-const" id="module-instead-of-const">Module instead of Const</a></h2>
-<p>With the support of attributes on modules the <code>const APP</code> workaround is not needed.</p>
-<p>Change</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>#[rtic::app(/* .. */)]
-const APP: () = {
-  [code here]
-};
-<span class="boring">}
-</span></code></pre></pre>
-<p>into</p>
-<pre><pre class="playground"><code class="language-rust">
-<span class="boring">#![allow(unused)]
-</span><span class="boring">fn main() {
-</span>#[rtic::app(/* .. */)]
-mod app {
-  [code here]
-}
-<span class="boring">}
-</span></code></pre></pre>
-<p>Now that a regular Rust module is used it means it is possible to have custom
-user code within that module.
-Additionally, it means that <code>use</code>-statements for resources etc may be required.</p>
 <h2><a class="header" href="#init-always-returns-late-resources" id="init-always-returns-late-resources">Init always returns late resources</a></h2>
 <p>In order to make the API more symmetric the #[init]-task always returns a late resource.</p>
 <p>From this:</p>
@@ -2167,7 +2143,8 @@ mod app {
     fn init(_: init::Context) {
         rtic::pend(Interrupt::UART0);
     }
-    [more code]
+
+    // [more code]
 }
 <span class="boring">}
 </span></code></pre></pre>
@@ -2183,11 +2160,12 @@ mod app {
 
         init::LateResources {}
     }
-    [more code]
+
+    // [more code]
 }
 <span class="boring">}
 </span></code></pre></pre>
-<h2><a class="header" href="#resources-struct---resources" id="resources-struct---resources">Resources struct - #[resources]</a></h2>
+<h2><a class="header" href="#resources-struct---resources" id="resources-struct---resources">Resources struct - <code>#[resources]</code></a></h2>
 <p>Previously the RTIC resources had to be in in a struct named exactly &quot;Resources&quot;:</p>
 <pre><pre class="playground"><code class="language-rust">
 <span class="boring">#![allow(unused)]
@@ -2213,12 +2191,76 @@ struct Resources {
 <span class="boring">#![allow(unused)]
 </span><span class="boring">fn main() {
 </span>#[resources]
-struct whateveryouwant {
+struct Whateveryouwant {
     // Resources defined in here
 }
 <span class="boring">}
 </span></code></pre></pre>
 <p>would work equally well.</p>
+<h2><a class="header" href="#spawnschedule-from-anywhere" id="spawnschedule-from-anywhere">Spawn/schedule from anywhere</a></h2>
+<p>With the new &quot;spawn/schedule from anywhere&quot;, old code such as:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[task(spawn = [bar])]
+fn foo(cx: foo::Context) {
+    cx.spawn.bar().unwrap();
+}
+
+#[task(schedule = [bar])]
+fn bar(cx: bar::Context) {
+    cx.schedule.foo(/* ... */).unwrap();
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Will now be written as:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[task]
+fn foo(_c: foo::Context) {
+    bar::spawn().unwrap();
+}
+
+#[task]
+fn bar(_c: bar::Context) {
+    foo::schedule(/* ... */).unwrap();
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Note that the attributes <code>spawn</code> and <code>schedule</code> are no longer needed.</p>
+<h2><a class="header" href="#symmetric-locks" id="symmetric-locks">Symmetric locks</a></h2>
+<p>Now RTIC utilizes symmetric locks, this means that the <code>lock</code> method need to be used for all resource access. In old code one could do the following as the high priority task has exclusive access to the resource:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[task(priority = 2, resources = [r])]
+fn foo(cx: foo::Context) {
+    cx.resources.r = /* ... */;
+}
+
+#[task(resources = [r])]
+fn bar(cx: bar::Context) {
+    cx.resources.r.lock(|r| r = /* ... */);
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>And with symmetric locks one needs to use locks in both tasks:</p>
+<pre><pre class="playground"><code class="language-rust">
+<span class="boring">#![allow(unused)]
+</span><span class="boring">fn main() {
+</span>#[task(priority = 2, resources = [r])]
+fn foo(cx: foo::Context) {
+    cx.resources.r.lock(|r| r = /* ... */);
+}
+
+#[task(resources = [r])]
+fn bar(cx: bar::Context) {
+    cx.resources.r.lock(|r| r = /* ... */);
+}
+<span class="boring">}
+</span></code></pre></pre>
+<p>Note that the performance does not change thanks to LLVM's optimizations which optimizes away unnecessary locks.</p>
 <hr />
 <h2><a class="header" href="#additions" id="additions">Additions</a></h2>
 <h3><a class="header" href="#extern-tasks" id="extern-tasks">Extern tasks</a></h3>
